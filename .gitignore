@@ -1,0 +1,79 @@
+# ==============================
+# Python virtual environments
+# ==============================
+.venv/
+.venv*/
+venv/
+env/
+
+# ==============================
+# Python cache
+# ==============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ==============================
+# Node.js dependencies
+# ==============================
+node_modules/
+
+# ==============================
+# Frontend build files
+# ==============================
+dist/
+build/
+
+# ==============================
+# Environment / secrets
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Logs
+# ==============================
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ==============================
+# Generated ML outputs
+# ==============================
+**/outputs/
+**/* outputs/
+
+# ==============================
+# Large ML datasets
+# ==============================
+run_all/test model/X_train.csv
+run_all/test model/X_test.csv
+run_all/test model/AIML Dataset.csv
+run_all/test model/y_train.csv
+run_all/test model/y_test.csv
+
+# ==============================
+# ZIP archives / backups
+# ==============================
+*.zip
+
+# ==============================
+# IDE files
+# ==============================
+.vscode/
+.idea/
+
+# ==============================
+# OS files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# Temporary Git backup/history
+.git_backup/
+
+# Temporary inspection file
+tracked.txt

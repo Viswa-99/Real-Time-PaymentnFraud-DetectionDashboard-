@@ -1,0 +1,23 @@
+{
+  "name": "transaction-stimulation-bot",
+  "version": "1.0.0",
+  "description": "High-performance (100 TPS) Transaction Stimulation Bot for Real-Time Payments Fraud Detection Dashboard",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js",
+    "start:100tps": "node bot.js --tps 100",
+    "start:500tps": "node bot.js --tps 500",
+    "python:bot": "python bot.py --tps 100",
+    "python:server": "python server.py"
+  },
+  "keywords": [
+    "upi",
+    "fraud-detection",
+    "tps-simulator",
+    "machine-learning",
+    "hackathon"
+  ],
+  "author": "",
+  "license": "ISC"
+}

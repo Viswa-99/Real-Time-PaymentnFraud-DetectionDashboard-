@@ -1,0 +1,153 @@
+================================================================================
+          UPI REAL-TIME ANOMALY & FRAUD DETECTION ML SYSTEM
+                  END-TO-END PROJECT EXPLANATION & RUN GUIDE
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. HOW TO RUN THE PROJECT (QUICK START)
+2. SYSTEM ARCHITECTURE & DATA FLOW
+3. TECHNOLOGIES & TOOLS USED
+4. HOW THE ML PIPELINE WORKS (LAYER 1 + LAYER 2)
+5. FEATURE ENGINEERING & REAL-TIME INFERENCE ENGINE
+6. REASON ENGINE (HUMAN-READABLE EXPLANATIONS)
+7. FRONTEND DASHBOARD & PERSISTENT BLOCKED THREATS ARCHIVE
+8. KEY TALKING POINTS & DEMO CHEATSHEET FOR PRESENTATION DAY
+
+================================================================================
+1. HOW TO RUN THE PROJECT (QUICK START)
+================================================================================
+
+You can start the entire multi-tier system using a single command:
+
+STEP 1: Open Terminal / Command Prompt in project directory:
+        cd "C:\Hackathon"
+
+STEP 2: Run the master orchestrator script:
+        python run_all.py
+
+This single command automatically starts all three tiers in parallel:
+  [1] FastAPI ML API Backend  -> http://localhost:5001 (Docs: /docs)
+  [2] 100 TPS Simulator Bot   -> http://localhost:9090 (WebSocket: 8080)
+  [3] Live React Frontend UI  -> http://localhost:5173
+
+--------------------------------------------------------------------------------
+AVAILABLE LOCAL INTERFACES FOR DEMO:
+--------------------------------------------------------------------------------
+• Live UI Fraud Dashboard       : http://localhost:5173
+• Blocked Threats Archive Page  : http://localhost:5173/alerts
+• Simulator Control Panel      : http://localhost:9090
+• FastAPI Interactive Docs     : http://localhost:5001/docs
+• All-Time Blocked Alerts API  : http://localhost:5001/alerts/blocked
+• Backend Health Check         : http://localhost:5001/health
+• Model Info Endpoint          : http://localhost:5001/model-info
+
+
+================================================================================
+2. SYSTEM ARCHITECTURE & DATA FLOW
+================================================================================
+
+                    ┌──────────────────────────────────────┐
+                    │          TRANSACTION SIMULATOR       │
+                    │        (100 TPS Async Engine)        │
+                    │         http://localhost:9090        │
+                    └──────────────────┬───────────────────┘
+                                       │
+                                       │ HTTP POST /transactions (100 TPS)
+                                       ▼
+                    ┌──────────────────────────────────────┐
+                    │          FASTAPI BACKEND API         │
+                    │         http://localhost:5001        │
+                    └──────────────────┬───────────────────┘
+                                       │
+                                       │ Raw Transaction Payload
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            ML INFERENCE PIPELINE                             │
+│                                                                              │
+│  [1] Feature Service                                                         │
+│      Computes 55 real-time behavioral features using in-memory user history  │
+│      (Velocity windows, amount ratio, z-score, location drift, travel speed) │
+│                                                                              │
+│  [2] Layer 1 — Isolation Forest (53 features)                                │
+│      Unsupervised baseline anomaly detector -> calculates layer1_score       │
+│                                                                              │
+│  [3] Layer 2 — XGBoost Classifier (56 features = 55 features + L1 score)     │
+│      Supervised model -> calculates final risk_probability (0.0 to 1.0)       │
+│      risk_score = risk_probability * 100.0 (0.0 to 100.0%)                    │
+│      decision = ANOMALY if risk_probability >= 0.86 else NORMAL              │
+│                                                                              │
+│  [4] Reason Engine                                                           │
+│      Evaluates feature values -> generates top human-readable explanations    │
+└──────────────────────────────────────┬───────────────────────────────────────┘
+                                       │
+                                       ├────────────────────────────────┐
+                                       │ If decision == ANOMALY         │
+                                       ▼                                ▼
+                    ┌────────────────────────────┐    ┌──────────────────────────┐
+                    │ IN-MEMORY BLOCKED ARCHIVE  │    │  FASTAPI WEBSOCKET MGR   │
+                    │   (GET /alerts/blocked)    │    │  ws://localhost:5001/ws  │
+                    └──────────────┬─────────────┘    └─────────────┬────────────┘
+                                   │                                │
+                                   └────────────────┬───────────────┘
+                                                    │ Broadcast & REST
+                                                    ▼
+                                ┌──────────────────────────────────────┐
+                                │         REACT FRONTEND DASHBOARD     │
+                                │         http://localhost:5173        │
+                                │  • All-Time Blocked Threats Archive  │
+                                │  • Interactive Threat Modal          │
+                                │  • Search, Filter, Freeze & CSV      │
+                                └──────────────────────────────────────┘
+
+
+================================================================================
+3. TECHNOLOGIES & TOOLS USED
+================================================================================
+
+1. PYTHON FASTAPI (Backend API Framework)
+   - Modern, high-performance Python web framework for async microservices.
+   - Provides `/alerts/blocked` REST API endpoint and WebSocket streaming.
+
+2. SCIKIT-LEARN (Isolation Forest - Layer 1)
+   - Unsupervised baseline anomaly score generator across 53 behavioral features.
+
+3. XGBOOST (XGBClassifier - Layer 2)
+   - Gradient boosted decision trees classifier for precise fraud risk probabilities.
+
+4. PYDANTIC (Data Validation & Payload Aliasing)
+   - Validates incoming transaction data structures and normalizes payload aliases.
+
+5. REACT + VITE + TAILWIND CSS (Frontend UI Dashboard)
+   - Instant rendering frontend with tabs, search, CSV export, freeze stream controls, and interactive modal dialogs.
+
+
+================================================================================
+4. HOW THE ML PIPELINE WORKS (LAYER 1 + LAYER 2)
+================================================================================
+
+• LAYER 1 (Isolation Forest): 53 features -> `layer1_anomaly_score`
+• LAYER 2 (XGBoost Classifier): 56 features -> `risk_probability`
+• THRESHOLD: `0.8600`
+  - If `risk_probability >= 0.86` -> `ANOMALY` (Auto-Blocked)
+  - If `risk_probability < 0.86`  -> `NORMAL`
+
+
+================================================================================
+5. PERSISTENT BLOCKED THREATS ARCHIVE & SEARCH
+================================================================================
+
+To ensure no blocked transaction is lost during high-throughput 100 TPS streams:
+
+1. Backend Storage (`main.py` -> `BlockedAlertsStore`):
+   - Every transaction flagged as `ANOMALY` or `p >= 0.86` is stored in an in-memory thread-safe store (`GET /alerts/blocked`).
+
+2. All-Time Blocked Threats Tab (`http://localhost:5173/alerts`):
+   - Displays all historical blocked threats from the entire session.
+   - Includes real-time Search Bar (Search by Transaction ID, User ID, Location, Reason).
+   - Includes CSV Export button (`[📥 Export Blocked Alerts CSV]`).
+   - Clicking any row opens the Threat Details Modal displaying full human-readable explanations.
+
+================================================================================
+                             END OF GUIDE
+================================================================================

@@ -1,0 +1,31 @@
+{
+  "tps": 100,
+  "mode": "hybrid",
+  "dataset_zip_path": "../../Dataset/upi_synthetic_dataset.zip",
+  "dataset_csv_name": "synthetic_upi_transactions_improved.csv",
+  "batch_size": 10,
+  "endpoints": {
+    "http_url": "http://127.0.0.1:5001/transactions",
+    "http_batch_url": "http://127.0.0.1:5001/transactions/batch",
+    "ws_client_url": "ws://127.0.0.1:5001/ws",
+    "ws_server_port": 8080,
+    "postgres_uri": "postgresql://postgres:postgres@localhost:5432/upi_fraud_db",
+    "enable_http": true,
+    "enable_ws_server": true,
+    "enable_ws_client": false,
+    "enable_postgres": false
+  },
+"layer2_anomaly_distribution": {
+  "COMBINED_ANOMALY": 0.15,
+  "HIGH_VELOCITY": 0.20,
+  "NEW_DEVICE": 0.15,
+  "UNUSUAL_AMOUNT": 0.15,
+  "REPEATED_TRANSACTION": 0.10,
+  "BEHAVIORAL_DRIFT": 0.05,
+  "UNUSUAL_LOCATION": 0.10,
+  "MULTIPLE_NEW_MERCHANTS": 0.05,
+  "NEW_RECEIVER": 0.05,
+  "UNUSUAL_TIME": 0.00,
+  "NONE": 0.00
+}
+}
